@@ -43,6 +43,7 @@ CGRect IASKCGRectSwap(CGRect rect);
 @interface IASKAppSettingsViewController ()
 @property (nonatomic, retain) NSMutableArray *viewList;
 @property (nonatomic, retain) id currentFirstResponder;
+@property (nonatomic, retain) NSIndexPath *postScrollTextResponderIndexPath;
 
 - (void)_textChanged:(id)sender;
 - (void)synchronizeSettings;
@@ -61,6 +62,7 @@ CGRect IASKCGRectSwap(CGRect rect);
 @synthesize showDoneButton = _showDoneButton;
 @synthesize settingsStore = _settingsStore;
 @synthesize hiddenKeys = _hiddenKeys;
+@synthesize postScrollTextResponderIndexPath = _postScrollTextResponderIndexPath;
 
 #pragma mark accessors
 - (IASKSettingsReader*)settingsReader {
@@ -798,6 +800,18 @@ CGRect IASKCGRectSwap(CGRect rect);
     }
 }
 
+#pragma mark -
+#pragma mark Scrolling Function
+
+- (void)scrollViewDidEndScrollingAnimation:(UIScrollView *)scrollView {
+    if (self.postScrollTextResponderIndexPath) {
+        IASKPSTextFieldSpecifierViewCell *cell = (IASKPSTextFieldSpecifierViewCell*)[self.tableView cellForRowAtIndexPath:self.postScrollTextResponderIndexPath];
+        if (cell && [cell isKindOfClass:[IASKPSTextFieldSpecifierViewCell class]]) {
+            [cell.textField becomeFirstResponder];
+        }
+    }
+}
+
 
 #pragma mark -
 #pragma mark MFMailComposeViewControllerDelegate Function
@@ -834,8 +848,51 @@ CGRect IASKCGRectSwap(CGRect rect);
 }
 
 - (BOOL)textFieldShouldReturn:(UITextField *)textField{
-	[textField resignFirstResponder];
-	self.currentFirstResponder = nil;
+    NSArray *visibleCellIndexes = [self.tableView indexPathsForVisibleRows];
+    NSIndexPath *foundIndexPath = nil;
+    BOOL handled = NO;
+    for (NSIndexPath *indexPath in visibleCellIndexes) {
+        IASKPSTextFieldSpecifierViewCell *cell = (IASKPSTextFieldSpecifierViewCell*)[self.tableView cellForRowAtIndexPath:indexPath];
+        if ([cell isKindOfClass:[IASKPSTextFieldSpecifierViewCell class]]) {
+            if (cell.textField == textField) {
+                foundIndexPath = indexPath;
+                break;
+            }
+        }
+    }
+    if (foundIndexPath) {
+        for (NSInteger section = foundIndexPath.section, l = [self.tableView numberOfSections]; section < l && ! handled; ++section) {
+            for (NSInteger row = section == foundIndexPath.section ? foundIndexPath.row : 0, rows = [self.tableView numberOfRowsInSection:section]; row < rows && ! handled; ++row) {
+                if (section < foundIndexPath.section || (section == foundIndexPath.section && row <= foundIndexPath.row)) {
+                    continue;
+                }
+                NSIndexPath *indexPath = [NSIndexPath indexPathForRow:row inSection:section];
+                IASKSpecifier *specifier = [self.settingsReader specifierForIndexPath:indexPath];
+                if ([[specifier type] isEqualToString:kIASKPSTextFieldSpecifier]) {
+                    IASKPSTextFieldSpecifierViewCell *cell = (IASKPSTextFieldSpecifierViewCell*)[self.tableView cellForRowAtIndexPath:indexPath];
+                    // If cell is visible already then set the text field to first responder,
+                    // otherwise make a note to do it later (with self.postScrollTextResponderIndexPath)
+                    if (cell && [cell isKindOfClass:[IASKPSTextFieldSpecifierViewCell class]]) {
+                        [cell.textField becomeFirstResponder];
+                    } else {
+                        self.postScrollTextResponderIndexPath = indexPath;
+                    }
+                    [self.tableView selectRowAtIndexPath:indexPath
+                                                animated:YES
+                                          scrollPosition:UITableViewScrollPositionNone];
+                    [self.tableView scrollToRowAtIndexPath:indexPath
+                                          atScrollPosition:UITableViewScrollPositionNone
+                                                  animated:YES];
+                    handled = YES;
+                    // setting handled = YES breaks us out of both loops
+                }
+            }
+        }
+    }
+    if (!handled) {
+        [textField resignFirstResponder];
+        self.currentFirstResponder = nil;
+    }
 	return YES;
 }
 
