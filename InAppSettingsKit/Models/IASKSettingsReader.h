@@ -53,6 +53,7 @@
 #define kIASKKeyboardPhonePad                 @"PhonePad"
 #define kIASKKeyboardNamePhonePad             @"NamePhonePad"
 #define kIASKKeyboardASCIICapable             @"AsciiCapable"
+#define kIASKReturnKeyType                    @"IASKReturnKeyType"
 
 #define KIASKKeyboardURL                      @"URL"
 #define kIASKKeyboardEmailAddress             @"EmailAddress"
@@ -82,6 +83,10 @@
 #define kIASKButtonSpecifier                  @"IASKButtonSpecifier"
 #define kIASKMailComposeSpecifier             @"IASKMailComposeSpecifier"
 #define kIASKCustomViewSpecifier              @"IASKCustomViewSpecifier"
+
+#define kIASKReturnKeyDefault                 @"IASKReturnKeyDefault"
+#define kIASKReturnKeyNext                    @"IASKReturnKeyNext"
+#define kIASKReturnKeyDone                    @"IASKReturnKeyDone"
 
 #define kIASKAppSettingChanged                @"kAppSettingChanged"
 

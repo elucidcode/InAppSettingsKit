@@ -562,6 +562,7 @@ CGRect IASKCGRectSwap(CGRect rect);
 		textField.delegate = self;
 		textField.secureTextEntry = [specifier isSecure];
 		textField.keyboardType = specifier.keyboardType;
+		textField.returnKeyType = specifier.returnKeyType;
 		textField.autocapitalizationType = specifier.autocapitalizationType;
 		if([specifier isSecure]){
 			textField.autocorrectionType = UITextAutocorrectionTypeNo;

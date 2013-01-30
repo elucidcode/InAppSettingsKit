@@ -217,6 +217,16 @@
     return UIKeyboardTypeDefault;
 }
 
+- (UIReturnKeyType)returnKeyType {
+    if ([[_specifierDict objectForKey:kIASKReturnKeyType] isEqualToString:kIASKReturnKeyDone]) {
+        return UIReturnKeyDone;
+    } else if ([[_specifierDict objectForKey:kIASKReturnKeyType] isEqualToString:kIASKReturnKeyNext]) {
+        return UIReturnKeyNext;
+    } else {
+        return UIReturnKeyDefault;
+    }
+}
+
 - (UITextAutocapitalizationType)autocapitalizationType {
     if ([[_specifierDict objectForKey:kIASKAutocapitalizationType] isEqualToString:kIASKAutoCapNone]) {
         return UITextAutocapitalizationTypeNone;

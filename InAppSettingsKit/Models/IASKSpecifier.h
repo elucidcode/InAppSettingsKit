@@ -59,4 +59,5 @@
 - (UIImage *)highlightedCellImage;
 - (BOOL)adjustsFontSizeToFitWidth;
 - (UITextAlignment)textAlignment;
+- (UIReturnKeyType)returnKeyType;
 @end
